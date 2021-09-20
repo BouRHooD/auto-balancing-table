@@ -1,4 +1,4 @@
-<h1 align="center"># auto-balancing-table</h1>
+<h1 align="center">auto-balancing-table</h1>
 <h1 align="center">Автоматически балансирующий стол</h1>
 
 <p align="center">
