@@ -23,6 +23,7 @@
 ---
 
 RU: Поверхность наклоняется сервоприводами для перемещения шара на основе видео с камеры, которая будет детектировать центр объекта в пространстве.
+
 EN: The surface is tilted by servos to move the ball based on the video from the camera, which will detect the center of the object in space
 
 # [View a demo](https://coub.com/view/2j0dqt)
