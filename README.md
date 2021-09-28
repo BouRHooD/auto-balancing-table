@@ -30,4 +30,5 @@ EN: The surface is tilted by servos to move the ball based on the video from the
 5. детектирование окружностей;
 6. передача управляющих сигналов на сервоприводы.
 
-![Иллюстрация к проекту](https://github.com/BouRHooD/auto-balancing-table/exemple_img_detected_ball.jpg)
+<img src="resources/exemple_img_detected_ball.jpg" width="200" height="50"/>
+
