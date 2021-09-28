@@ -56,23 +56,29 @@ class Tracker(Thread):
         h, w = img.shape[:2]
         dt = time.clock() - self.time
         self.time = time.clock()
-
+        
+        # Функция inRange преобразует цветную картинку в черно-белую маску. В этой маске, все пиксели, попадающие в заданный диапазон — становятся белыми. Прочие — черными.
+        # В HSV проще создать правильную маску для выделения нужного цвета
         hsv = cv2.cvtColor(img, cv.CV_BGR2HSV )
         thresh = cv2.inRange(hsv, self.h_min, self.h_max)
         thresh_2 = cv2.inRange(hsv, self.h_min_2, self.h_max_2)
         thresh = cv2.bitwise_or(thresh, thresh_2)
 
         if MORPH_ON:
+            # Данная процедура нужна для того, чтобы убрать из кадра мелкий мусор и замазать возможные дефекты в выделяемом объекте. 
+            # Например, морфологическое преобразование позволяет убрать из теннисного шарика прожилку, которая имеет отличный цвет.
             st1 = cv2.getStructuringElement(cv2.MORPH_RECT, (21, 21), (10, 10))
             st2 = cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11), (5, 5))
             thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, st1) 
             thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, st2)
 
         if BLUR_ON: 
+            # Банальное размывание методом Гаусса. Как и предыдущая процедура, размывание необходимо для сглаживания шероховатостей
             thresh = cv2.GaussianBlur(thresh, (5, 5), 2)
  
         circles = None
         if HOUGH_ON:
+            # Процедура HoughCircles находит на изображении все окружности, используя при этом преобразование Хофа
             circles = cv2.HoughCircles( thresh, 
                                         cv.CV_HOUGH_GRADIENT, 2, h/4, 
                                         np.array([]),
@@ -91,6 +97,7 @@ class Tracker(Thread):
                     x = int(c[0])
                     y = int(c[1])
             if found:
+                # Для наглядности, поверх изображения накладывается окружность синего цвета, а центр этой окружности обозначается зеленой точкой
                 cv2.circle(img, (x, y), 3, (0,255,0), -1)
                 cv2.circle(img, (x, y), maxRadius, (255,0,0), 3)
  
@@ -99,7 +106,8 @@ class Tracker(Thread):
  
                 self.lastx = x
                 self.lasty = y
-
+                
+                # На основе координат обнаруженной окружности, рассчитываются углы поворота сервоприводов
                 if SERVO_ON:
                     yaw = (x*1./w)*50.0 - 25.0
                     pitch = (y*1./h)*39.0 - 19.5
@@ -112,7 +120,8 @@ class Tracker(Thread):
 
         if self.flag:
             cv2.imshow(self.color, thresh)
-
+        
+        #  В углу кадра отображаем время между двумя кадрами
         text = '%0.1f' % (1./dt)
         cv2.putText( img, text, (20, 20), 
                      cv2.FONT_HERSHEY_PLAIN,
