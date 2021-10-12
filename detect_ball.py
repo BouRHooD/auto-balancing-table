@@ -12,7 +12,7 @@ SERVO_ON = 1
 BLUR_ON = 1
 SHOW_MAIN = 1
 SHOW_THRESH = 1
-FLIP = 1
+FLIP = 0
 
 COLOR_RANGE={
  'ball_light': (np.array((20, 70, 170), np.uint8), np.array((40, 170, 255), np.uint8)),
@@ -44,7 +44,7 @@ class Tracker(Thread):
         self.flag = flag
  
         if self.flag:
-            cv2.namedWindow( self.color )
+            cv2.namedWindow(self.color)
  
     def poll(self,img):
         par1 = 80 #40
@@ -96,9 +96,10 @@ class Tracker(Thread):
                 # Для наглядности, поверх изображения накладывается окружность синего цвета, а центр этой окружности обозначается зеленой точкой
                 cv2.circle(img, (x, y), 3, (0,255,0), -1)
                 cv2.circle(img, (x, y), maxRadius, (255,0,0), 3)
- 
-                xspeed = abs(x - self.lastx)/dt;
-                yspeed = abs(y - self.lasty)/dt;
+
+                if dt != 0:
+                    xspeed = abs(x - self.lastx)/dt;
+                    yspeed = abs(y - self.lasty)/dt;
  
                 self.lastx = x
                 self.lasty = y
