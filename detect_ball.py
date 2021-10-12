@@ -1,11 +1,8 @@
 import sys, time
 from threading import Thread
-import cv2.cv as cv
 import cv2
 import numpy as np
-import video
 
-from servo import Servo
 
 COM = 'COM4'
 
@@ -33,7 +30,6 @@ class Tracker(Thread):
     def __init__(self, color, color_2=None, flag=0):
         Thread.__init__(self)
         self.color = color
-        self.path_color = cv.CV_RGB(0,110,0)
 
         self.lastx = 0
         self.lasty = 0
@@ -51,15 +47,15 @@ class Tracker(Thread):
             cv2.namedWindow( self.color )
  
     def poll(self,img):
-        par1 = 80#40
-        par2 = 50#67
+        par1 = 80 #40
+        par2 = 50 #67
         h, w = img.shape[:2]
-        dt = time.clock() - self.time
-        self.time = time.clock()
+        dt = time.process_time() - self.time
+        self.time = time.process_time()
         
         # Функция inRange преобразует цветную картинку в черно-белую маску. В этой маске, все пиксели, попадающие в заданный диапазон — становятся белыми. Прочие — черными.
         # В HSV проще создать правильную маску для выделения нужного цвета
-        hsv = cv2.cvtColor(img, cv.CV_BGR2HSV )
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV )
         thresh = cv2.inRange(hsv, self.h_min, self.h_max)
         thresh_2 = cv2.inRange(hsv, self.h_min_2, self.h_max_2)
         thresh = cv2.bitwise_or(thresh, thresh_2)
@@ -80,16 +76,16 @@ class Tracker(Thread):
         if HOUGH_ON:
             # Процедура HoughCircles находит на изображении все окружности, используя при этом преобразование Хофа
             circles = cv2.HoughCircles( thresh, 
-                                        cv.CV_HOUGH_GRADIENT, 2, h/4, 
+                                        cv2.HOUGH_GRADIENT, 2, h/4,
                                         np.array([]),
                                         par1, par2, 5, 0) 
  
-        if circles is not None:
+        if circles is not None and circles.size > 0:
             maxRadius = 0
             x = 0
             y = 0
             found = False
- 
+
             for c in circles[0]:
                 found = True
                 if c[2] > maxRadius:
@@ -108,11 +104,11 @@ class Tracker(Thread):
                 self.lasty = y
                 
                 # На основе координат обнаруженной окружности, рассчитываются углы поворота сервоприводов
-                if SERVO_ON:
-                    yaw = (x*1./w)*50.0 - 25.0
-                    pitch = (y*1./h)*39.0 - 19.5
-                    sctrl.shift(0, (x*1./w)*20-10)
-                    sctrl.shift(1, -((y*1./h)*20-10))
+                # if SERVO_ON:
+                    # yaw = (x*1./w)*50.0 - 25.0
+                    # pitch = (y*1./h)*39.0 - 19.5
+                    # sctrl.shift(0, (x*1./w)*20-10)
+                    # sctrl.shift(1, -((y*1./h)*20-10))
 
         if FLIP:
             img = cv2.flip(img,0)
@@ -122,26 +118,28 @@ class Tracker(Thread):
             cv2.imshow(self.color, thresh)
         
         #  В углу кадра отображаем время между двумя кадрами
-        text = '%0.1f' % (1./dt)
-        cv2.putText( img, text, (20, 20), 
-                     cv2.FONT_HERSHEY_PLAIN,
-                     1.0, (0, 110, 0), thickness = 2)
+        if dt != 0:
+            text = '%0.1f' % (1./dt)
+            cv2.putText( img, text, (20, 20),
+                         cv2.FONT_HERSHEY_PLAIN,
+                         1.0, (0, 110, 0), thickness = 2)
 
         if SHOW_MAIN:
             cv2.imshow('result', img)
 
 if __name__ == '__main__':
     if SHOW_MAIN:
-        cv2.namedWindow( "result", cv.CV_WINDOW_AUTOSIZE )
-     green = Tracker('ball_light', 'ball_dark', SHOW_THRESH)
-     green.start()
+        cv2.namedWindow( "result", cv2.WINDOW_AUTOSIZE)
 
-    if SERVO_ON:
-        sctrl = Servo( com=COM )
-        sctrl.setpos(0,45)
-        sctrl.setpos(1,45)
+    green = Tracker('ball_light', 'ball_dark', SHOW_THRESH)
+    green.start()
 
-    cap = video.create_capture(1)
+    # if SERVO_ON:
+        # sctrl = Servo( com=COM )
+        # sctrl.setpos(0,45)
+        # sctrl.setpos(1,45)
+
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     flag, img = cap.read()
     green.path = createPath(img)
 
@@ -152,8 +150,8 @@ if __name__ == '__main__':
         except:
             cap = None
             green = None
-            if SERVO_ON:
-                sctrl.stop()
+            # if SERVO_ON:
+                #sctrl.stop()
             raise
  
         green.join()
@@ -161,11 +159,12 @@ if __name__ == '__main__':
         if ch == 27:
             break
 
-    if SERVO_ON:
-        sctrl.setpos(0,45)
-        sctrl.setpos(1,45) 
-        sctrl.stop()
+    # if SERVO_ON:
+        # sctrl.setpos(0,45)
+        # sctrl.setpos(1,45)
+        # sctrl.stop()
 
-   green = None
-   cap = None
-   cv2.destroyAllWindows()
+    green = None
+    cap = None
+    cv2.destroyAllWindows()
+
