@@ -1,4 +1,4 @@
-# Это Python программа NeuLab4 Leonov Vladislav 181-311
+# Это Python программа Leonov Vladislav 181-311
 # Подключение библиотек
 import sys                                                            # Предоставляет системе особые параметры и функции
 import cv2                                                            # OpenCV - техническое зрение (opencv-python)
@@ -26,7 +26,8 @@ class Window(QMainWindow):
     def formOpening(self):
         # Настройки окна главной формы
         self.ui = uic.loadUi('GUI.ui')                                # GUI, должен быть в папке с main.py
-        self.ui.setWindowTitle('Auto Balancing Table 181-311')        # Название главного окна
+        self.ui.setWindowTitle('Автоматически балансирующий '
+                               'стол 181-311')                        # Название главного окна
         self.ui.setWindowIcon(QIcon('surflay.ico'))                   # Иконка на гланое окно
         self.ui.show()                                                # Открываем окно формы
 
