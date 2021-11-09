@@ -43,5 +43,5 @@ EN: The surface is tilted by servos to move the ball based on the video from the
 5. запоминаем значения координат;
 6. рисуем на рабочей области.
 
-![Иллюстрация к проекту](https://github.com/BouRHooD/auto-balancing-table/raw/main/ABT_MainUser.jpg)
+![Иллюстрация к проекту](https://github.com/BouRHooD/auto-balancing-table/raw/main/ABT_MainUser.png)
 
