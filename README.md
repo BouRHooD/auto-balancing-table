@@ -32,3 +32,16 @@ EN: The surface is tilted by servos to move the ball based on the video from the
 
 ![Иллюстрация к проекту](https://github.com/BouRHooD/auto-balancing-table/raw/main/exemple_img_detected_ball_.jpg)
 
+---
+<h1 align="left"> Программа пользователя для задания траектории </h1>
+Алгоритм работы программы для распознавания состоит из 6 основных шагов:
+
+1. переключение в режим задания траектории;
+2. получение координаты указателя мыши по щелчку левой кнопкой;
+3. проверка попадания координат в границы стола;
+4. перерасчёт координат, если не попали в границы стола;
+5. запоминаем значения координат;
+6. рисуем на рабочей области.
+
+![Иллюстрация к проекту](https://github.com/BouRHooD/auto-balancing-table/raw/main/ABT_MainUser.jpg)
+
