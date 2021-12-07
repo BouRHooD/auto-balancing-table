@@ -45,3 +45,7 @@ EN: The surface is tilted by servos to move the ball based on the video from the
 
 ![Иллюстрация к проекту](https://github.com/BouRHooD/auto-balancing-table/raw/main/ABT_MainUser.png)
 
+# Обновленный интерфейс
+![Иллюстрация к проекту](https://github.com/BouRHooD/auto-balancing-table/raw/main/docs/updatedUI.png)
+
+
