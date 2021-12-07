@@ -59,6 +59,11 @@ class FormWidget(QWidget):
         self.pix = inImg
         self.update()
 
+    def saveCurrentImage(self, numberImage):
+        if self.pix is not None:
+            cv2.imwrite('SavedImages/Image' + str(numberImage) + '.png', self.pix)
+            self.StatusLabel.setText('Статус: сохранено Image' + str(self.numberImage))
+
     def setFlagDraw(self, inBool):
         self.flagDraw = inBool
 
@@ -157,7 +162,7 @@ class Dialog_01(QMainWindow):
         super().__init__()
         self.title = 'Автоматически балансирующий стол 181-311'                      # Название главного окна
         self.setWindowIcon(QIcon('surflay.ico'))     # Иконка на гланое окно
-        self.top, self.left, self.width, self.height = 0, 0, 900, 520
+        self.top, self.left, self.width, self.height = 0, 0, 800, 535
         self.initUI()
 
         # Флаги работы программы
@@ -169,6 +174,10 @@ class Dialog_01(QMainWindow):
         self.frameOut = None  # Выходное (Обработанное) изображение с камеры
 
     def initUI(self):
+
+        self.frameToSave = None  # Обработанное изображение для сохранения
+        self.flagRecord = False
+        self.numberImage = 0  # Переменная номера изображения
 
         self.setWindowTitle(self.title)
         self.setGeometry(self.top, self.left, self.width, self.height)
@@ -193,20 +202,72 @@ class Dialog_01(QMainWindow):
         self.form_widget = FormWidget(self)
         self.vbox.addWidget(self.form_widget)
 
+        MIN_Button_Height = 30
         self.GroupBox_Button = QGroupBox(self)
-        self.GroupBox_Button.setGeometry(490, 5, 300, 120)
+        self.GroupBox_Button.setGeometry(490, 5, 300, 150)
         self.vbox = QVBoxLayout()
         self.GroupBox_Button.setLayout(self.vbox)
         self.cbModeSelect = QComboBox(self)
         self.cbModeSelect.addItem("Режим автоматического балансирования")
         self.cbModeSelect.addItem("Режим движения по траектории")
+        self.cbModeSelect.setMinimumHeight(MIN_Button_Height)
+        self.cbModeSelect.setStyleSheet(open('styles/styleQComboBox.css').read())
         self.bCameraWork = QPushButton('Включить видео с камеры', self)
+        self.bCameraWork.setMinimumHeight(MIN_Button_Height)
+        self.bCameraWork.setStyleSheet(open('styles/styleButtonStartStopVideo.css').read())
         self.bStartMission = QPushButton('Начать движение шарика', self)
+        self.bStartMission.setMinimumHeight(MIN_Button_Height)
+        self.bStartMission.setStyleSheet(open('styles/styleButtonStartStopVideo.css').read())
         self.bClearPointer = QPushButton('Очистить поле', self)
+        self.bClearPointer.setMinimumHeight(MIN_Button_Height)
+        self.bClearPointer.setStyleSheet(open('styles/styleButtonStartStopVideo.css').read())
         self.vbox.addWidget(self.cbModeSelect)
         self.vbox.addWidget(self.bCameraWork)
         self.vbox.addWidget(self.bStartMission)
         self.vbox.addWidget(self.bClearPointer)
+
+        self.GroupBox_Video_Button = QGroupBox(self)
+        self.GroupBox_Video_Button.setGeometry(490, 160, 300, 250)
+        self.vbox_Video = QVBoxLayout()
+        self.GroupBox_Video_Button.setLayout(self.vbox_Video)
+        self.label_NamePanel = QLabel("Режим съёмки")
+        self.label_NamePanel.setAlignment(Qt.AlignCenter)
+        self.bVideo = QPushButton('Включить видеосъемку', self)
+        self.bVideo.setStyleSheet(open('styles/styleButtonStartStopVideo.css').read())
+        self.cbCount = QRadioButton("Задать количество кадров")
+        self.cbStop = QRadioButton("До остановки сохранения")
+        self.cbStop.click()
+        self.label_NamespinBoxCount = QLabel("Количество кадров до остановки")
+        self.label_NamespinBoxCount.setAlignment(Qt.AlignCenter)
+        self.spinBoxCount = QSpinBox()
+        self.spinBoxCount.setAlignment(Qt.AlignCenter)
+        self.spinBoxCount.setMinimum(1)
+        self.spinBoxCount.setMaximum(100000)
+        self.label_NamespinBoxInterval = QLabel("Интервал съемки, мс")
+        self.label_NamespinBoxInterval.setAlignment(Qt.AlignCenter)
+        self.spinBoxInterval = QSpinBox()
+        self.spinBoxInterval.setAlignment(Qt.AlignCenter)
+        self.spinBoxInterval.setMinimum(100)
+        self.spinBoxInterval.setMaximum(10000)
+        self.bVideo.setMinimumHeight(MIN_Button_Height)
+        self.vbox_Video.addWidget(self.label_NamePanel)
+        self.vbox_Video.addWidget(self.bVideo)
+        self.vbox_Video.addWidget(self.cbCount)
+        self.vbox_Video.addWidget(self.cbStop)
+        self.vbox_Video.addWidget(self.label_NamespinBoxCount)
+        self.vbox_Video.addWidget(self.spinBoxCount)
+        self.vbox_Video.addWidget(self.label_NamespinBoxInterval)
+        self.vbox_Video.addWidget(self.spinBoxInterval)
+
+        self.GroupBox_Status = QGroupBox(self)
+        self.GroupBox_Status.setGeometry(5, 490, 480, 40)
+        self.vbox_Status = QVBoxLayout()
+        self.GroupBox_Status.setLayout(self.vbox_Status)
+        self.StatusLabel = QLabel("Статус: ")
+        self.StatusLabel.setAlignment(Qt.AlignTop)
+        self.vbox_Status.addWidget(self.StatusLabel)
+
+        self.StatusLabel.setText("Статус: активирован автоматический режим")
 
         select_item = self.cbModeSelect.currentIndex()
         if select_item == 0:
@@ -216,34 +277,92 @@ class Dialog_01(QMainWindow):
         # Подписки на события
         # Включение камеры
         self.bCameraWork.clicked.connect(self.cameraWorkClicked)
+        self.bVideo.clicked.connect(self.cameraRecord)
         # Очистить поле
-        self.bClearPointer.clicked.connect(self.form_widget.clear_painter)
+        self.bClearPointer.clicked.connect(self.clearPainter)
         self.cbModeSelect.currentIndexChanged.connect(self.index_change)
+
+    def cameraRecord(self):
+        interval = self.spinBoxInterval.value() / 1000  # Интервал сохранения
+
+        # Режим нажатия кнопки остановки
+        if self.cbCount.isChecked():
+            thread = Thread(target=self.recordThread1, args=(1, interval))
+
+        # Режим заданного количества кадров
+        elif self.cbStop.isChecked():
+            if self.flagRecord:
+                self.bVideo.setText('Включить видеосъёмку')
+                self.flagRecord = False
+            else:
+                self.bVideo.setText('Отключить видеосъёмку ')
+                self.flagRecord = True
+            thread = Thread(target=self.recordThread2, args=(1, interval))
+
+        thread.start()
+
+    # Поток для съёмки в режиме заданного количества кадров
+    def recordThread1(self, first_interval, interval):
+        count = self.spinBoxCount.value()
+        from time import sleep
+        sleep(first_interval)
+
+        for i in range(0, count):
+            self.saveImageClicked()
+            sleep(interval)
+
+        self.StatusLabel.setText('Статус: запись завершена')
+
+    # Поток для съёмки в режиме нажатия кнопки остановки
+    def recordThread2(self, first_interval, interval):
+        from time import sleep
+        sleep(first_interval)
+
+        while self.flagRecord:
+            self.saveImageClicked()
+            sleep(interval)
+
+        self.StatusLabel.setText('Статус: запись завершена')
+
+    # Клик по кнопке "Сохранить изображение"
+    def saveImageClicked(self):
+        if self.flagCameraWork:
+            self.numberImage += 1
+            self.form_widget.saveCurrentImage(self.numberImage)
 
     def index_change(self):
         select_item = self.cbModeSelect.currentIndex()
         if select_item == 1:
+            self.StatusLabel.setText("Статус: активирован режим траектории")
             self.bStartMission.setEnabled(True)
             self.form_widget.setFlagDraw(True)
         else:
+            self.StatusLabel.setText("Статус: активирован автоматический режим")
             self.bStartMission.setEnabled(False)
             self.form_widget.setFlagDraw(False)
 
         if select_item == 0:
             self.form_widget.clear_painter()
 
+    def clearPainter(self):
+        self.StatusLabel.setText("Статус: поле для рисования очищено")
+        self.form_widget.clear_painter()
+
     # Нажатие на кнопку включения камеры
     def cameraWorkClicked(self):
         if self.flagCameraWork:
             self.flagCameraWork = False
             self.bCameraWork.setText('Включить видео с камеры')
+            self.StatusLabel.setText("Статус: камера выключена")
             self.capture.release()
             self._image = QtGui.QPixmap("image_table.jpg")
             self.form_widget.setImageFromCamera(self._image)  # Вывод обработанного изображения на форму
+            self.frameToSave = self._image  # Для сохранения изображения
             cv2.destroyAllWindows()
         else:
             self.flagCameraWork = True
             self.bCameraWork.setText('Выключить видео с камеры')
+            self.StatusLabel.setText("Статус: камера включена")
             thread = Thread(target=self.ThreadCamera)
             thread.start()
 
