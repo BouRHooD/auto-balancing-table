@@ -61,8 +61,24 @@ class FormWidget(QWidget):
 
     def saveCurrentImage(self, numberImage):
         if self.pix is not None:
-            cv2.imwrite('SavedImages/Image' + str(numberImage) + '.png', self.pix)
-            self.StatusLabel.setText('Статус: сохранено Image' + str(self.numberImage))
+            import numpy as np
+            image = self.qtpixmap_to_cvimg(self.pix)
+            cv2.imwrite('SavedImages/Image' + str(numberImage) + '.png', image)
+            return 'Статус: сохранено Image' + str(numberImage)
+        else:
+            return 'Статус: сохранить Img не получилось'
+
+
+
+    def qtpixmap_to_cvimg(self, qtpixmap):
+        qimg = qtpixmap.toImage()
+        temp_shape = (qimg.height(), qimg.bytesPerLine() * 8 // qimg.depth())
+        temp_shape += (4,)
+        ptr = qimg.bits()
+        ptr.setsize(qimg.byteCount())
+        result = np.array(ptr, dtype=np.uint8).reshape(temp_shape)
+        result = result[..., :3]
+        return result
 
     def setFlagDraw(self, inBool):
         self.flagDraw = inBool
@@ -296,6 +312,7 @@ class Dialog_01(QMainWindow):
                 self.flagRecord = False
             else:
                 self.bVideo.setText('Отключить видеосъёмку ')
+                self.numberImage = 0
                 self.flagRecord = True
             thread = Thread(target=self.recordThread2, args=(1, interval))
 
@@ -328,7 +345,8 @@ class Dialog_01(QMainWindow):
     def saveImageClicked(self):
         if self.flagCameraWork:
             self.numberImage += 1
-            self.form_widget.saveCurrentImage(self.numberImage)
+            result = self.form_widget.saveCurrentImage(self.numberImage)
+            self.StatusLabel.setText(result)
 
     def index_change(self):
         select_item = self.cbModeSelect.currentIndex()
