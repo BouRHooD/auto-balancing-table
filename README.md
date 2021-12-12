@@ -13,7 +13,7 @@
 
 ---
 
-# Как работать с репозиторием: [ссылка](https://github.com/BouRHooD/auto-balancing-table/raw/main/docs/howWorkWithRepository/howWorkWithRepository.md)
+# Как работать с репозиторием: [ссылка](docs/howWorkWithRepository/howWorkWithRepository.md)
 
 ---
 
