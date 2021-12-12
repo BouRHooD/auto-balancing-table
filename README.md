@@ -30,7 +30,7 @@ EN: The surface is tilted by servos to move the ball based on the video from the
 5. детектирование окружностей;
 6. передача управляющих сигналов на сервоприводы.
 
-![Иллюстрация к проекту](https://github.com/BouRHooD/auto-balancing-table/raw/main/exemple_img_detected_ball_.jpg)
+![Иллюстрация к проекту](https://github.com/BouRHooD/auto-balancing-table/raw/main/docs/images/exemple_img_detected_ball_.jpg)
 
 ---
 <h1 align="left"> Программа пользователя для задания траектории </h1>
@@ -43,9 +43,9 @@ EN: The surface is tilted by servos to move the ball based on the video from the
 5. запоминаем значения координат;
 6. рисуем на рабочей области.
 
-![Иллюстрация к проекту](https://github.com/BouRHooD/auto-balancing-table/raw/main/ABT_MainUser.png)
+![Иллюстрация к проекту](https://github.com/BouRHooD/auto-balancing-table/raw/main/docs/images/ABT_MainUser.png)
 
 # Обновленный интерфейс
-![Иллюстрация к проекту](https://github.com/BouRHooD/auto-balancing-table/raw/main/docs/updatedUI.png)
+![Иллюстрация к проекту](https://github.com/BouRHooD/auto-balancing-table/raw/main/docs/images/updatedUI.png)
 
 
