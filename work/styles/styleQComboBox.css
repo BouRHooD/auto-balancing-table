@@ -1,0 +1,18 @@
+QComboBox {
+		   background-color: rgb(226, 232, 237);
+		   border-style: outset;
+		   border-width: 1px;
+		   border-radius: 3px;
+		   border-color: gray;
+		   min-width: 10em;
+		   padding: 6px;
+		   }
+		   
+QComboBox:hover {
+    background-color: rgb(255, 232, 237);
+}
+
+QComboBox::down-arrow {
+	border-radius: 3px;
+    background-color: rgb(226, 232, 237);
+}
